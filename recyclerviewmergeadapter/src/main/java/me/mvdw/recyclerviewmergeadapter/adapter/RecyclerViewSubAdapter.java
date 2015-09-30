@@ -10,12 +10,19 @@ import java.lang.ref.WeakReference;
  */
 public abstract class RecyclerViewSubAdapter<VH extends RecyclerViewSubAdapter.ViewHolder> extends RecyclerView.Adapter<VH> {
 
+    @Override
+    public void onBindViewHolder(VH vh, int i) {
+        vh.setAdapter(this);
+    }
+
     public static class ViewHolder extends RecyclerView.ViewHolder {
         WeakReference<RecyclerView.Adapter> mAdapter;
 
-        public ViewHolder(View itemView, RecyclerView.Adapter adapter) {
+        public ViewHolder(View itemView) {
             super(itemView);
+        }
 
+        public void setAdapter(RecyclerView.Adapter adapter){
             this.mAdapter = new WeakReference<>(adapter);
         }
 
@@ -25,13 +32,15 @@ public abstract class RecyclerViewSubAdapter<VH extends RecyclerViewSubAdapter.V
             RecyclerView parentRecyclerView = (RecyclerView) itemView.getParent();
 
             if(parentRecyclerView.getAdapter() instanceof RecyclerViewMergeAdapter){
-                for(Object localAdapter : ((RecyclerViewMergeAdapter) parentRecyclerView.getAdapter()).mAdapters){
-                    RecyclerView.Adapter adapter = ((RecyclerViewMergeAdapter.LocalAdapter) localAdapter).mAdapter;
+                if(((RecyclerViewMergeAdapter) parentRecyclerView.getAdapter()).mAdapters.size() > 1) {
+                    for (Object localAdapter : ((RecyclerViewMergeAdapter) parentRecyclerView.getAdapter()).mAdapters) {
+                        RecyclerView.Adapter adapter = ((RecyclerViewMergeAdapter.LocalAdapter) localAdapter).mAdapter;
 
-                    if(adapter == this.mAdapter.get()){
-                        break;
-                    } else {
-                        position -= adapter.getItemCount();
+                        if (this.mAdapter != null && adapter == this.mAdapter.get()) {
+                            break;
+                        } else {
+                            position -= adapter.getItemCount();
+                        }
                     }
                 }
             }
