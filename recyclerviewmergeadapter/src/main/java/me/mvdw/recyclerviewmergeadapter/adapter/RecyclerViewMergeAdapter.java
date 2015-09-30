@@ -185,7 +185,7 @@ public class RecyclerViewMergeAdapter<T extends RecyclerView.Adapter> extends Re
     private int getMergePositionForLocalPosition(RecyclerView.Adapter adapter, int position){
 
         for(LocalAdapter localAdapter : mAdapters){
-            if(!localAdapter.mAdapter.equals(adapter)){
+            if(localAdapter.mAdapter != adapter){
                 position += localAdapter.mAdapter.getItemCount();
             }
         }
