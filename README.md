@@ -17,7 +17,9 @@ Add subadapters or views to the merge adapter and then set it on the RecyclerVie
 
 This `RecyclerViewMergeAdapter` should be used with `RecyclerViewSubAdapter`, this is a subclass of the regular `RecyclerViewAdapter`. Make sure the adapters you implement and add are subclasses of `RecyclerViewSubAdapter`.
 
-This sub adapter uses a different ViewHolder. Without using the `RecyclerViewSubAdapter` and this ViewHolder there would only be access to `getAdapterPosition()` and `getLayoutPosition()` on the standard ViewHolder which return the position of the ViewHolder as seen in the context of the whole merge adapter, not the subadapters. This makes properly handling click events, updating data sets and notifying the subadapter of inserted, changed or removed items problematic.
+You should extend your ViewHolders from `RecyclerViewSubAdapter.ViewHolder`. Without using the `RecyclerViewSubAdapter` and this ViewHolder there would only be access to `getAdapterPosition()` and `getLayoutPosition()` on the standard ViewHolder which return the position of the ViewHolder as seen in the context of the whole merge adapter, not the subadapters. This makes properly handling click events, updating data sets and notifying the subadapter of inserted, changed or removed items problematic.
+
+`public static class MyViewHolder extends RecyclerViewSubAdapter.ViewHolder`
 
 ##### getLocalPosition()
 This ViewHolder implements a `getLocalPosition()` method which returns the position of ViewHolder in its subadapter.
@@ -27,7 +29,7 @@ You need to call `super.onBindViewHolder()` in order to keep the reference to th
 
 ```
 @Override
-public void onBindViewHolder(final ViewHolder myViewHolder, int i) {
+public void onBindViewHolder(final MyViewHolder myViewHolder, int i) {
     super.onBindViewHolder(myViewHolder, i);
     
     // Bind your viewHolder
