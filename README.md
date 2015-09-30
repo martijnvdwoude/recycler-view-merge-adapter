@@ -12,7 +12,6 @@ Add subadapters or views to the merge adapter and then set it on the RecyclerVie
 - `removeAdapter(int index)`
 - `addView(View view)`
 - `addViews(List<View> views)`
-- `getItemCount()`
 - `getSubAdapterCount()`
 - `getSubAdapter(int index)`
 
