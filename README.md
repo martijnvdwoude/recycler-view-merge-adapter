@@ -23,13 +23,13 @@ This sub adapter uses a different ViewHolder. Without using the `RecyclerViewSub
 This ViewHolder implements a `getLocalPosition()` method which returns the position of ViewHolder in its subadapter.
 
 ##### Note
-The ViewHolder needs a reference to the adapter so make sure you pass `this` as a second parameter in the constructor of the ViewHolder instance that you return in `onCreateViewHolder()`:
+You need to call `super.onBindViewHolder()` in order to keep the reference to the adapter up to date in the ViewHolder. This prevents issues that would otherwise be caused when recycling ViewHolders when swapping adapters for example.
 
 ```
 @Override
-public ViewHolder onCreateViewHolder(ViewGroup parent, int i) {
-    View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.my_row_layout, parent, false);
-    return new ViewHolder(view, this);
+public void onBindViewHolder(final ViewHolder myViewHolder, int i) {
+    super.onBindViewHolder(myViewHolder, i);
+    
+    // Bind your viewHolder
 }
 ```
