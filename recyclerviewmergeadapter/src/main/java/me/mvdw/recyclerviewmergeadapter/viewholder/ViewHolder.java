@@ -26,7 +26,7 @@ public class ViewHolder extends RecyclerView.ViewHolder {
             for(Object localAdapter : ((RecyclerViewMergeAdapter) parentRecyclerView.getAdapter()).mAdapters){
                 RecyclerView.Adapter adapter = ((RecyclerViewMergeAdapter.LocalAdapter) localAdapter).mAdapter;
 
-                if(adapter ==   this.mAdapter){
+                if(adapter == this.mAdapter){
                     break;
                 } else {
                     position -= adapter.getItemCount();
