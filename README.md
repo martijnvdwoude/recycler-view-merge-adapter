@@ -15,7 +15,7 @@ Add subadapters or views to the merge adapter and then set it on the RecyclerVie
 - `getSubAdapterCount()`
 - `getSubAdapter(int index)`
 
-This `RecyclerViewMergeAdapter` should be used with `RecyclerViewSubAdapter`, this is a subclass of the regular `RecyclerViewAdapter`. Make sure the adapters you implement and add are subclasses of `RecyclerViewSubAdapter`.
+This `RecyclerViewMergeAdapter` should be used with `RecyclerViewSubAdapter`, this is a subclass of the regular `RecyclerView.Adapter`. Make sure the adapters you implement and add are subclasses of `RecyclerViewSubAdapter`.
 
 You should extend your ViewHolders from `RecyclerViewSubAdapter.ViewHolder`. Without using the `RecyclerViewSubAdapter` and this ViewHolder there would only be access to `getAdapterPosition()` and `getLayoutPosition()` on the standard ViewHolder which return the position of the ViewHolder as seen in the context of the whole merge adapter, not the subadapters. This makes properly handling click events, updating data sets and notifying the subadapter of inserted, changed or removed items problematic.
 
