@@ -8,13 +8,13 @@ import me.mvdw.recyclerviewmergeadapter.adapter.RecyclerViewMergeAdapter;
 /**
  * Created by Martijn van der Woude on 29-09-15.
  */
-public class SubViewHolder extends RecyclerView.ViewHolder {
-    private RecyclerView.Adapter adapter;
+public class ViewHolder extends RecyclerView.ViewHolder {
+    private RecyclerView.Adapter mAdapter;
 
-    public SubViewHolder(View itemView, RecyclerView.Adapter adapter) {
+    public ViewHolder(View itemView, RecyclerView.Adapter adapter) {
         super(itemView);
 
-        this.adapter = adapter;
+        this.mAdapter = adapter;
     }
 
     public int getLocalPosition(){
@@ -27,7 +27,7 @@ public class SubViewHolder extends RecyclerView.ViewHolder {
             for(Object localAdapter : ((RecyclerViewMergeAdapter) mainAdapter).mAdapters){
                 RecyclerView.Adapter adapter = ((RecyclerViewMergeAdapter.LocalAdapter) localAdapter).mAdapter;
 
-                if(adapter.equals(this.adapter)){
+                if(adapter.equals(this.mAdapter)){
                     break;
                 } else {
                     position -= adapter.getItemCount();
