@@ -1,27 +1,42 @@
 package me.mvdw.recyclerviewmergeadapter.adapter;
 
 import android.support.v7.widget.RecyclerView;
-import android.view.ViewGroup;
+import android.view.View;
 
-import me.mvdw.recyclerviewmergeadapter.viewholder.ViewHolder;
+import java.lang.ref.WeakReference;
 
 /**
  * Created by Martijn van der Woude on 29-09-15.
  */
-public class RecyclerViewSubAdapter<VH extends ViewHolder> extends RecyclerView.Adapter<VH> {
+public abstract class RecyclerViewSubAdapter<VH extends RecyclerViewSubAdapter.ViewHolder> extends RecyclerView.Adapter<VH> {
 
-    @Override
-    public VH onCreateViewHolder(ViewGroup parent, int viewType) {
-        return null;
-    }
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+        WeakReference<RecyclerView.Adapter> mAdapter;
 
-    @Override
-    public void onBindViewHolder(VH holder, int position) {
+        public ViewHolder(View itemView, RecyclerView.Adapter adapter) {
+            super(itemView);
 
-    }
+            this.mAdapter = new WeakReference<>(adapter);
+        }
 
-    @Override
-    public int getItemCount() {
-        return 0;
+        public int getLocalPosition(){
+            int position = super.getAdapterPosition();
+
+            RecyclerView parentRecyclerView = (RecyclerView) itemView.getParent();
+
+            if(parentRecyclerView.getAdapter() instanceof RecyclerViewMergeAdapter){
+                for(Object localAdapter : ((RecyclerViewMergeAdapter) parentRecyclerView.getAdapter()).mAdapters){
+                    RecyclerView.Adapter adapter = ((RecyclerViewMergeAdapter.LocalAdapter) localAdapter).mAdapter;
+
+                    if(adapter == this.mAdapter.get()){
+                        break;
+                    } else {
+                        position -= adapter.getItemCount();
+                    }
+                }
+            }
+
+            return position;
+        }
     }
 }
