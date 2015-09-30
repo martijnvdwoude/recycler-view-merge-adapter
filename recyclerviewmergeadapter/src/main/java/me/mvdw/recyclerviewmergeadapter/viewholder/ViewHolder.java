@@ -18,13 +18,12 @@ public class ViewHolder extends RecyclerView.ViewHolder {
     }
 
     public int getLocalPosition(){
-        RecyclerView recyclerView = (RecyclerView) itemView.getParent();
-        RecyclerView.Adapter mainAdapter = recyclerView.getAdapter();
-
         int position = super.getAdapterPosition();
 
-        if(mainAdapter instanceof RecyclerViewMergeAdapter){
-            for(Object localAdapter : ((RecyclerViewMergeAdapter) mainAdapter).mAdapters){
+        RecyclerView parentRecyclerView = (RecyclerView) itemView.getParent();
+
+        if(parentRecyclerView.getAdapter() instanceof RecyclerViewMergeAdapter){
+            for(Object localAdapter : ((RecyclerViewMergeAdapter) parentRecyclerView.getAdapter()).mAdapters){
                 RecyclerView.Adapter adapter = ((RecyclerViewMergeAdapter.LocalAdapter) localAdapter).mAdapter;
 
                 if(adapter.equals(this.mAdapter)){
