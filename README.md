@@ -21,8 +21,8 @@ You should extend your ViewHolders from `RecyclerViewSubAdapter.ViewHolder`. Wit
 
 `public static class MyViewHolder extends RecyclerViewSubAdapter.ViewHolder`
 
-##### getLocalPosition()
-This ViewHolder implements a `getLocalPosition()` method which returns the position of ViewHolder in its subadapter.
+##### getSubAdapterPosition()
+This ViewHolder implements a `getSubAdapterPosition()` method which returns the position of ViewHolder in its subadapter.
 
 ##### Note
 You need to call `super.onBindViewHolder()` in order to keep the reference to the adapter up to date in the ViewHolder. This prevents issues that would otherwise be caused when recycling ViewHolders when swapping adapters for example.
