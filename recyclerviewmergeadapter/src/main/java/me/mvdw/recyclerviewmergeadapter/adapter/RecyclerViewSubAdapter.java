@@ -26,7 +26,7 @@ public abstract class RecyclerViewSubAdapter<VH extends RecyclerViewSubAdapter.V
             this.mAdapter = new WeakReference<>(adapter);
         }
 
-        public int getLocalPosition(){
+        public int getSubAdapterPosition(){
             int position = super.getAdapterPosition();
 
             RecyclerView parentRecyclerView = (RecyclerView) itemView.getParent();
