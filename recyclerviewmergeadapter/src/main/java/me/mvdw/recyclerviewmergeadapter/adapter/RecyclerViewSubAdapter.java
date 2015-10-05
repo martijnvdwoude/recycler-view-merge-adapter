@@ -11,6 +11,7 @@ import java.lang.ref.WeakReference;
 public abstract class RecyclerViewSubAdapter<VH extends RecyclerViewSubAdapter.ViewHolder> extends RecyclerView.Adapter<VH> {
 
     @Override
+    @CallSuper
     public void onBindViewHolder(VH vh, int i) {
         vh.setAdapter(this);
     }
