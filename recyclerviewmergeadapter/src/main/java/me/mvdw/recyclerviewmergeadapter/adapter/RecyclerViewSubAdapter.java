@@ -36,25 +36,25 @@ public abstract class RecyclerViewSubAdapter<VH extends RecyclerViewSubAdapter.V
         }
 
         public int getSubAdapterPosition(){
-            int position = super.getAdapterPosition();
+            int adapterPosition = super.getAdapterPosition();
 
             RecyclerView parentRecyclerView = (RecyclerView) itemView.getParent();
 
-            if(parentRecyclerView.getAdapter() instanceof RecyclerViewMergeAdapter){
-                if(((RecyclerViewMergeAdapter) parentRecyclerView.getAdapter()).mAdapters.size() > 1) {
-                    for (Object localAdapter : ((RecyclerViewMergeAdapter) parentRecyclerView.getAdapter()).mAdapters) {
-                        RecyclerView.Adapter adapter = ((RecyclerViewMergeAdapter.LocalAdapter) localAdapter).mAdapter;
+            if(parentRecyclerView.getAdapter() instanceof RecyclerViewMergeAdapter
+                    && ((RecyclerViewMergeAdapter) parentRecyclerView.getAdapter()).mAdapters.size() > 1){
 
-                        if (this.mAdapter != null && adapter == this.mAdapter.get()) {
-                            break;
-                        } else {
-                            position -= adapter.getItemCount();
-                        }
+                for (Object localAdapter : ((RecyclerViewMergeAdapter) parentRecyclerView.getAdapter()).mAdapters) {
+                    RecyclerView.Adapter adapter = ((RecyclerViewMergeAdapter.LocalAdapter) localAdapter).mAdapter;
+
+                    if (this.mAdapter != null && adapter == this.mAdapter.get()) {
+                        break;
+                    } else {
+                        adapterPosition -= adapter.getItemCount();
                     }
                 }
             }
 
-            return position;
+            return adapterPosition;
         }
     }
 }
