@@ -1,5 +1,6 @@
 package me.mvdw.recyclerviewmergeadapter.adapter;
 
+import android.support.annotation.CallSuper;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
@@ -17,7 +18,7 @@ public abstract class RecyclerViewSubAdapter<VH extends RecyclerViewSubAdapter.V
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        WeakReference<RecyclerView.Adapter> mAdapter;
+        private WeakReference<? extends RecyclerView.Adapter> mAdapter;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -25,6 +26,13 @@ public abstract class RecyclerViewSubAdapter<VH extends RecyclerViewSubAdapter.V
 
         public void setAdapter(RecyclerView.Adapter adapter){
             this.mAdapter = new WeakReference<>(adapter);
+        }
+
+        public RecyclerView.Adapter getAdapter(){
+            if(mAdapter != null)
+                return mAdapter.get();
+
+            return null;
         }
 
         public int getSubAdapterPosition(){
