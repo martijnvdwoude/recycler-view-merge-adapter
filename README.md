@@ -6,6 +6,8 @@ RecyclerViewMergeAdapter
 
 A merge adapter for the RecyclerView, a continuation on this gist: https://gist.github.com/athornz/008edacd1d3b2f1e1836
 
+The purpose of this merge adapter is to let you use multiple adapters with a RecyclerView instead of only one. 
+
 ## Download
 Gradle (jCenter)
 ```
