@@ -1,13 +1,13 @@
-RecyclerViewMergeAdapter
-===
-
 [![Platform](http://img.shields.io/badge/platform-android-brightgreen.svg?style=flat)](http://developer.android.com/index.html)
 [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
+RecyclerViewMergeAdapter
+===
+
 A merge adapter for the RecyclerView, a continuation on this gist: https://gist.github.com/athornz/008edacd1d3b2f1e1836
 
-## Grab via Gradle
-
+## Download
+Gradle (jCenter)
 ```
 dependencies {
     compile 'me.mvdw.recyclerviewmergeadapter:recyclerviewmergeadapter:1.0.0'
