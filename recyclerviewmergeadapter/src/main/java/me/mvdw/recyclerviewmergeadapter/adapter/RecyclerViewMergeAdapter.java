@@ -17,8 +17,7 @@ public class RecyclerViewMergeAdapter<T extends RecyclerView.Adapter> extends Re
     private int mViewTypeIndex=0;
     private HashMap<RecyclerView.Adapter, ForwardingDataSetObserver> observers = new HashMap<>();
 
-    public RecyclerViewMergeAdapter() {
-    }
+    public RecyclerViewMergeAdapter() {}
 
     public RecyclerViewMergeAdapter(Context context) {
         this.mContext = context;
@@ -32,7 +31,6 @@ public class RecyclerViewMergeAdapter<T extends RecyclerView.Adapter> extends Re
         public final T mAdapter;
         public int mLocalPosition = 0;
         public Map<Integer, Integer> mViewTypesMap = new HashMap<>();
-
         public LocalAdapter(T adapter) {
             mAdapter = adapter;
         }
@@ -112,9 +110,11 @@ public class RecyclerViewMergeAdapter<T extends RecyclerView.Adapter> extends Re
 
     @Override public int getItemCount() {
         int count = 0;
+
         for (LocalAdapter adapter : mAdapters) {
             count += adapter.mAdapter.getItemCount();
         }
+
         return count;
         // TODO: cache counts until next onChanged
     }
@@ -134,13 +134,16 @@ public class RecyclerViewMergeAdapter<T extends RecyclerView.Adapter> extends Re
         while (i < adapterCount) {
             LocalAdapter a = mAdapters.get(i);
             int newCount = count + a.mAdapter.getItemCount();
+
             if (position < newCount) {
                 a.mLocalPosition = position - count;
                 return a;
             }
+
             count = newCount;
             i++;
         }
+
         return null;
     }
 
@@ -152,6 +155,7 @@ public class RecyclerViewMergeAdapter<T extends RecyclerView.Adapter> extends Re
     @Override public int getItemViewType(int position) {
         LocalAdapter result = getAdapterOffsetForItem(position);
         int localViewType = result.mAdapter.getItemViewType(result.mLocalPosition);
+
         if (result.mViewTypesMap.containsValue(localViewType)) {
             for (Map.Entry<Integer, Integer> entry : result.mViewTypesMap.entrySet()) {
                 if (entry.getValue() == localViewType) {
@@ -159,6 +163,7 @@ public class RecyclerViewMergeAdapter<T extends RecyclerView.Adapter> extends Re
                 }
             }
         }
+
         mViewTypeIndex += 1;
         result.mViewTypesMap.put(mViewTypeIndex, localViewType);
         return mViewTypeIndex;
@@ -170,6 +175,7 @@ public class RecyclerViewMergeAdapter<T extends RecyclerView.Adapter> extends Re
             if (adapter.mViewTypesMap.containsKey(viewType))
                 return adapter.mAdapter.onCreateViewHolder(viewGroup,adapter.mViewTypesMap.get(viewType));
         }
+
         return null;
     }
 
@@ -182,19 +188,35 @@ public class RecyclerViewMergeAdapter<T extends RecyclerView.Adapter> extends Re
 	 * forwarding data set observer
 	 * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-    private int getMergePositionForLocalPosition(RecyclerView.Adapter adapter, int position){
+    private int getMergePositionForLocalPosition(RecyclerView.Adapter adapter, int position) {
+        final int adapterPosition = findPositionForAdapter(adapter);
 
-        for(LocalAdapter localAdapter : mAdapters){
-            if(localAdapter.mAdapter != adapter){
+        int index = 0;
+
+        for (LocalAdapter localAdapter : mAdapters) {
+            if (index < adapterPosition) {
                 position += localAdapter.mAdapter.getItemCount();
+            } else {
+                break;
             }
+
+            index++;
         }
 
         return position;
     }
 
-    private class ForwardingDataSetObserver extends RecyclerView.AdapterDataObserver {
+    private int findPositionForAdapter(RecyclerView.Adapter adapter) {
+        for (int index = 0; index < mAdapters.size(); index++) {
+            if (mAdapters.get(index).mAdapter == adapter) {
+                return index;
+            }
+        }
 
+        return -1;
+    }
+
+    private class ForwardingDataSetObserver extends RecyclerView.AdapterDataObserver {
         private RecyclerView.Adapter mAdapter;
 
         public ForwardingDataSetObserver(RecyclerView.Adapter adapter) {
@@ -287,8 +309,7 @@ public class RecyclerViewMergeAdapter<T extends RecyclerView.Adapter> extends Re
             return holder;
         }
 
-        @Override public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
-        }
+        @Override public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {}
 
         /**
          * Get the row id associated with the specified position
