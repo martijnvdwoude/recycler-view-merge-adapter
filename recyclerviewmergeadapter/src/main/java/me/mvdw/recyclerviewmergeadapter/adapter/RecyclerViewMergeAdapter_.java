@@ -1,46 +1,22 @@
 package me.mvdw.recyclerviewmergeadapter.adapter;
 
-import android.support.annotation.CallSuper;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class RecyclerViewMergeAdapter_<T extends RecyclerViewMergeAdapter_.RecyclerViewSubAdapter> extends RecyclerView.Adapter {
-
-    /**
-     * Adapters used by the RecyclerViewMergeAdapter should subclass RecyclerViewSubAdapter and use its ViewHolder.
-     *
-     * @param <VH>
-     */
-    public abstract static class RecyclerViewSubAdapter<VH extends RecyclerViewSubAdapter.ViewHolder> extends RecyclerView.Adapter<VH> {
-
-        public static class ViewHolder extends RecyclerView.ViewHolder {
-
-            public int subAdapterPosition;
-
-            public ViewHolder(View itemView) {
-                super(itemView);
-                subAdapterPosition = -1;
-            }
-        }
-
-        @Override
-        @CallSuper
-        public void onBindViewHolder(VH vh, int i) {
-            vh.subAdapterPosition = i;
-        }
-    }
+public class RecyclerViewMergeAdapter_ extends RecyclerView.Adapter {
 
     private class AdapterDataObserver extends RecyclerView.AdapterDataObserver {
 
-        private T mAdapter;
+        private RecyclerView.Adapter<RecyclerView.ViewHolder> mAdapter;
 
-        AdapterDataObserver(T adapter) {
+        AdapterDataObserver(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter) {
             mAdapter = adapter;
         }
 
@@ -73,11 +49,11 @@ public class RecyclerViewMergeAdapter_<T extends RecyclerViewMergeAdapter_.Recyc
      * LocalAdapter is a wrapper class that, for a given adapter, maintains a map of which indices in the global set of items refer to which view type(s).
      */
     public class LocalAdapter {
-        public final T mAdapter;
+        public final RecyclerView.Adapter<RecyclerView.ViewHolder> mAdapter;
         public Map<Integer, Integer> mViewTypesMap = new HashMap<>();
         public AdapterDataObserver adapterDataObserver;
 
-        public LocalAdapter(T adapter, AdapterDataObserver adapterDataObserver) {
+        public LocalAdapter(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, AdapterDataObserver adapterDataObserver) {
             mAdapter = adapter;
             this.adapterDataObserver = adapterDataObserver;
         }
@@ -95,7 +71,7 @@ public class RecyclerViewMergeAdapter_<T extends RecyclerViewMergeAdapter_.Recyc
             posInSubAdapter = position;
         }
 
-        public T getAdapter() {
+        public RecyclerView.Adapter<RecyclerView.ViewHolder> getAdapter() {
             return localAdapter != null ? localAdapter.mAdapter : null;
         }
 
@@ -122,7 +98,7 @@ public class RecyclerViewMergeAdapter_<T extends RecyclerViewMergeAdapter_.Recyc
     /**
      * @param adapter Append an adapter to the list of adapters.
      */
-    public void addAdapter(T adapter) {
+    public void addAdapter(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter) {
         addAdapter(mAdapters.size(), adapter);
     }
 
@@ -130,7 +106,7 @@ public class RecyclerViewMergeAdapter_<T extends RecyclerViewMergeAdapter_.Recyc
      * @param index   The index at which to add an adapter to the list of adapters.
      * @param adapter The adapter to add.
      */
-    public void addAdapter(int index, T adapter) {
+    public void addAdapter(int index, RecyclerView.Adapter<RecyclerView.ViewHolder> adapter) {
         AdapterDataObserver adapterDataObserver = new AdapterDataObserver(adapter);
         mAdapters.add(index, new LocalAdapter(adapter, adapterDataObserver));
         adapter.registerAdapterDataObserver(adapterDataObserver);
@@ -151,7 +127,7 @@ public class RecyclerViewMergeAdapter_<T extends RecyclerViewMergeAdapter_.Recyc
      *
      * @param adapter The adapter to remove from the list of adapters.
      */
-    public void removeAdapter(T adapter) {
+    public void removeAdapter(RecyclerView.Adapter adapter) {
         for (int i = mAdapters.size() - 1; i >= 0; i--) {
             LocalAdapter local = mAdapters.get(i);
             if (local.mAdapter.equals(adapter)) {
@@ -186,7 +162,7 @@ public class RecyclerViewMergeAdapter_<T extends RecyclerViewMergeAdapter_.Recyc
      * @param index The index for which the return the adapter.
      * @return The adapter which was found at the given index.
      */
-    public T getSubAdapter(int index) {
+    public RecyclerView.Adapter getSubAdapter(int index) {
         return mAdapters.get(index).mAdapter;
     }
 
@@ -233,16 +209,16 @@ public class RecyclerViewMergeAdapter_<T extends RecyclerViewMergeAdapter_.Recyc
      * @param adapter The adapter for which to the return the first global position.
      * @return The first global position for the given adapter, or -1 if no such position could be found.
      */
-    public int getSubAdapterFirstGlobalPosition(T adapter) {
+    public int getSubAdapterFirstGlobalPosition(RecyclerView.Adapter adapter) {
 
         int count = 0;
 
         for (LocalAdapter localAdapter : mAdapters) {
-            T t = localAdapter.mAdapter;
-            if (t.equals(adapter) && t.getItemCount() > 0) {
+            RecyclerView.Adapter adapter_ = localAdapter.mAdapter;
+            if (adapter_.equals(adapter) && adapter_.getItemCount() > 0) {
                 return count;
             }
-            count += t.getItemCount();
+            count += adapter_.getItemCount();
         }
 
         return -1;
@@ -251,8 +227,8 @@ public class RecyclerViewMergeAdapter_<T extends RecyclerViewMergeAdapter_.Recyc
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
         PosSubAdapterInfo posSubAdapterInfo = getPosSubAdapterInfoForGlobalPosition(position);
-        RecyclerViewSubAdapter recyclerViewSubAdapter = posSubAdapterInfo.getAdapter();
-        recyclerViewSubAdapter.onBindViewHolder((RecyclerViewSubAdapter.ViewHolder) viewHolder, posSubAdapterInfo.posInSubAdapter);
+        RecyclerView.Adapter<RecyclerView.ViewHolder> adapter = posSubAdapterInfo.getAdapter();
+        adapter.onBindViewHolder(viewHolder, posSubAdapterInfo.posInSubAdapter);
     }
 
     @Override
@@ -285,5 +261,22 @@ public class RecyclerViewMergeAdapter_<T extends RecyclerViewMergeAdapter_.Recyc
             count += adapter.mAdapter.getItemCount();
         }
         return count;
+    }
+
+    /**
+     * Add one or more View objects to the adapter.
+     *
+     * @param view The View or View(s) to add to the adapter. Do not pass null into this method.
+     */
+    public void addView(View... view) {
+        List<View> viewList = Arrays.asList(view);
+        addViews(viewList);
+    }
+
+    /**
+     * A List of View objects to the adapter at once. Make sure your list does not contain null.
+     */
+    public void addViews(List<View> views) {
+        addAdapter(new ViewAdapter(views));
     }
 }
