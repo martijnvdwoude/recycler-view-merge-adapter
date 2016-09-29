@@ -1,145 +1,191 @@
 package me.mvdw.recyclerviewmergeadapter.adapter;
 
-import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class RecyclerViewMergeAdapter<T extends RecyclerView.Adapter> extends RecyclerView.Adapter {
+public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
 
-    private Context mContext;
-    public ArrayList<LocalAdapter> mAdapters = new ArrayList<>();
-    private int mViewTypeIndex=0;
-    private HashMap<RecyclerView.Adapter, ForwardingDataSetObserver> observers = new HashMap<>();
+    private class AdapterDataObserver extends RecyclerView.AdapterDataObserver {
 
-    public RecyclerViewMergeAdapter() {}
+        private RecyclerView.Adapter<RecyclerView.ViewHolder> mAdapter;
 
-    public RecyclerViewMergeAdapter(Context context) {
-        this.mContext = context;
-    }
-
-    /**
-     * A Mergeable adapter must implement both ListAdapter and SpinnerAdapter to be useful in lists and spinners.
-     */
-
-    public class LocalAdapter {
-        public final T mAdapter;
-        public int mLocalPosition = 0;
-        public Map<Integer, Integer> mViewTypesMap = new HashMap<>();
-        public LocalAdapter(T adapter) {
+        AdapterDataObserver(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter) {
             mAdapter = adapter;
+        }
+
+        @Override
+        public void onItemRangeChanged(int positionStart, int itemCount) {
+            int subAdapterOffset = getSubAdapterFirstGlobalPosition(mAdapter);
+            RecyclerViewMergeAdapter.this.notifyItemRangeChanged(subAdapterOffset + positionStart, itemCount);
+        }
+
+        @Override
+        public void onItemRangeInserted(int positionStart, int itemCount) {
+            int subAdapterOffset = getSubAdapterFirstGlobalPosition(mAdapter);
+            RecyclerViewMergeAdapter.this.notifyItemRangeInserted(subAdapterOffset + positionStart, itemCount);
+        }
+
+        @Override
+        public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
+            int subAdapterOffset = getSubAdapterFirstGlobalPosition(mAdapter);
+            RecyclerViewMergeAdapter.this.notifyItemMoved(subAdapterOffset + fromPosition, subAdapterOffset + toPosition);
+        }
+
+        @Override
+        public void onItemRangeRemoved(int positionStart, int itemCount) {
+            int subAdapterOffset = getSubAdapterFirstGlobalPosition(mAdapter);
+            RecyclerViewMergeAdapter.this.notifyItemRangeRemoved(subAdapterOffset + positionStart, itemCount);
         }
     }
 
-    /** Append the given adapter to the list of merged adapters. */
-    public void addAdapter(T adapter) {
+    /**
+     * LocalAdapter is a wrapper class that, for a given adapter, maintains a map of which indices in the global set of items refer to which view type(s).
+     */
+    public class LocalAdapter {
+        public final RecyclerView.Adapter<RecyclerView.ViewHolder> mAdapter;
+        public Map<Integer, Integer> mViewTypesMap = new HashMap<>();
+        public AdapterDataObserver adapterDataObserver;
+
+        public LocalAdapter(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, AdapterDataObserver adapterDataObserver) {
+            mAdapter = adapter;
+            this.adapterDataObserver = adapterDataObserver;
+        }
+    }
+
+    /**
+     * PosSubAdapterInfo is a wrapper class that holds a local position of an item and reference to the adapter it belongs to.
+     */
+    public class PosSubAdapterInfo {
+        public final LocalAdapter localAdapter;
+        public final int posInSubAdapter;
+
+        public PosSubAdapterInfo(LocalAdapter adapter, int position) {
+            localAdapter = adapter;
+            posInSubAdapter = position;
+        }
+
+        public RecyclerView.Adapter<RecyclerView.ViewHolder> getAdapter() {
+            return localAdapter != null ? localAdapter.mAdapter : null;
+        }
+
+        Map<Integer, Integer> getViewTypesMap() {
+            return localAdapter != null ? localAdapter.mViewTypesMap : null;
+        }
+    }
+
+    protected List<LocalAdapter> mAdapters;
+    private int mViewTypeIndex;
+
+    public RecyclerViewMergeAdapter() {
+        mAdapters = new ArrayList<>();
+        mViewTypeIndex = 0;
+    }
+
+    /**
+     * @return A List of LocalAdapter objects.
+     */
+    public List<LocalAdapter> getAdapters() {
+        return mAdapters;
+    }
+
+    /**
+     * @param adapter Append an adapter to the list of adapters.
+     */
+    public void addAdapter(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter) {
         addAdapter(mAdapters.size(), adapter);
     }
 
-    /** Add the given adapter to the list of merged adapters at the given index. */
-    public void addAdapter(int index, T adapter) {
-        mAdapters.add(index, new LocalAdapter(adapter));
-
-        ForwardingDataSetObserver observer = new ForwardingDataSetObserver(adapter);
-        observers.put(adapter, observer);
-
-        adapter.registerAdapterDataObserver(observer);
-        notifyDataSetChanged();
+    /**
+     * @param index   The index at which to add an adapter to the list of adapters.
+     * @param adapter The adapter to add.
+     */
+    public void addAdapter(int index, RecyclerView.Adapter<RecyclerView.ViewHolder> adapter) {
+        AdapterDataObserver adapterDataObserver = new AdapterDataObserver(adapter);
+        mAdapters.add(index, new LocalAdapter(adapter, adapterDataObserver));
+        adapter.registerAdapterDataObserver(adapterDataObserver);
     }
 
-	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	 * remove adapter
-	 * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-    /** Remove the given adapter from the list of merged adapters. */
-    public void removeAdapter(T adapter) {
-        if (!mAdapters.contains(adapter)) return;
-        removeAdapter(mAdapters.indexOf(adapter));
+    /**
+     * Clear all adapters from the list of adapters.
+     */
+    public void clearAdapters() {
+        for (LocalAdapter localAdapter : mAdapters) {
+            localAdapter.mAdapter.unregisterAdapterDataObserver(localAdapter.adapterDataObserver);
+        }
+        mAdapters.clear();
     }
 
-    /** Remove the adapter at the given index from the list of merged adapters. */
+    /**
+     * Remove a specific adapter from the list of adapters.
+     *
+     * @param adapter The adapter to remove from the list of adapters.
+     */
+    public void removeAdapter(RecyclerView.Adapter adapter) {
+        for (int i = mAdapters.size() - 1; i >= 0; i--) {
+            LocalAdapter local = mAdapters.get(i);
+            if (local.mAdapter.equals(adapter)) {
+                removeAdapter(mAdapters.indexOf(local));
+            }
+        }
+    }
+
+    /**
+     * Remove the adapter at a specific index from the list of adapters.
+     *
+     * @param index The index in the adapter list at which an adapter should be removed.
+     */
     public void removeAdapter(int index) {
-        if (index < 0 || index >= mAdapters.size()) return;
-        LocalAdapter adapter = mAdapters.remove(index);
-
-        ForwardingDataSetObserver observer = observers.get(adapter.mAdapter);
-        adapter.mAdapter.unregisterAdapterDataObserver(observer);
-        observers.remove(adapter.mAdapter);
-
-        notifyDataSetChanged();
+        LocalAdapter localAdapter = mAdapters.get(index);
+        localAdapter.mAdapter.unregisterAdapterDataObserver(localAdapter.adapterDataObserver);
+        mAdapters.remove(localAdapter);
     }
 
+    /**
+     * Return the number of adapters in the list of adapters.
+     *
+     * @return The number of adapters.
+     */
     public int getSubAdapterCount() {
         return mAdapters.size();
     }
 
-    public T getSubAdapter(int index) {
+    /**
+     * Get a specific adapter for a given index.
+     *
+     * @param index The index for which the return the adapter.
+     * @return The adapter which was found at the given index.
+     */
+    public RecyclerView.Adapter getSubAdapter(int index) {
         return mAdapters.get(index).mAdapter;
     }
 
     /**
-     * Adds a new View to the roster of things to appear in
-     * the aggregate list.
+     * Return a PosSubAdapterInfo object for a given global position.
      *
-     * @param view
-     *          Single view to add
+     * @param globalPosition The global position in the entire set of items.
+     * @return A PosSubAdapterInfo object containing a reference to the adapter and the local
+     * position in that adapter that corresponds to the given global position.
      */
-    public void addView(View view) {
-        ArrayList<View> list=new ArrayList<View>(1);
+    public PosSubAdapterInfo getPosSubAdapterInfoForGlobalPosition(final int globalPosition) {
 
-        list.add(view);
-
-        addViews(list);
-    }
-
-    /**
-     * Adds a list of views to the roster of things to appear
-     * in the aggregate list.
-     *
-     * @param views
-     *          List of views to add
-     */
-    public void addViews(List<View> views) {
-        addAdapter((T) new ViewsAdapter(mContext, views));
-    }
-
-    @Override public int getItemCount() {
-        int count = 0;
-
-        for (LocalAdapter adapter : mAdapters) {
-            count += adapter.mAdapter.getItemCount();
-        }
-
-        return count;
-        // TODO: cache counts until next onChanged
-    }
-
-    /**
-     * For a given merged position, find the corresponding Adapter and local position within that Adapter by iterating through Adapters and
-     * summing their counts until the merged position is found.
-     *
-     * @param position a merged (global) position
-     * @return the matching Adapter and local position, or null if not found
-     */
-    public LocalAdapter getAdapterOffsetForItem(final int position) {
         final int adapterCount = mAdapters.size();
+
         int i = 0;
         int count = 0;
 
         while (i < adapterCount) {
             LocalAdapter a = mAdapters.get(i);
             int newCount = count + a.mAdapter.getItemCount();
-
-            if (position < newCount) {
-                a.mLocalPosition = position - count;
-                return a;
+            if (globalPosition < newCount) {
+                return new PosSubAdapterInfo(a, globalPosition - count);
             }
-
             count = newCount;
             i++;
         }
@@ -147,17 +193,50 @@ public class RecyclerViewMergeAdapter<T extends RecyclerView.Adapter> extends Re
         return null;
     }
 
-    @Override public long getItemId(int position) {
-        return position;
+    @Override
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
+        for (LocalAdapter adapter : mAdapters) {
+            if (adapter.mViewTypesMap.containsKey(viewType)) {
+                return adapter.mAdapter.onCreateViewHolder(viewGroup, adapter.mViewTypesMap.get(viewType));
+            }
+        }
+        return null;
     }
 
+    /**
+     * Return the first global position in the entire set of items for a given adapter.
+     *
+     * @param adapter The adapter for which to the return the first global position.
+     * @return The first global position for the given adapter, or -1 if no such position could be found.
+     */
+    public int getSubAdapterFirstGlobalPosition(RecyclerView.Adapter adapter) {
 
-    @Override public int getItemViewType(int position) {
-        LocalAdapter result = getAdapterOffsetForItem(position);
-        int localViewType = result.mAdapter.getItemViewType(result.mLocalPosition);
+        int count = 0;
 
-        if (result.mViewTypesMap.containsValue(localViewType)) {
-            for (Map.Entry<Integer, Integer> entry : result.mViewTypesMap.entrySet()) {
+        for (LocalAdapter localAdapter : mAdapters) {
+            RecyclerView.Adapter adapter_ = localAdapter.mAdapter;
+            if (adapter_.equals(adapter) && adapter_.getItemCount() > 0) {
+                return count;
+            }
+            count += adapter_.getItemCount();
+        }
+
+        return -1;
+    }
+
+    @Override
+    public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
+        PosSubAdapterInfo posSubAdapterInfo = getPosSubAdapterInfoForGlobalPosition(position);
+        RecyclerView.Adapter<RecyclerView.ViewHolder> adapter = posSubAdapterInfo.getAdapter();
+        adapter.onBindViewHolder(viewHolder, posSubAdapterInfo.posInSubAdapter);
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        PosSubAdapterInfo result = getPosSubAdapterInfoForGlobalPosition(position);
+        int localViewType = result.getAdapter().getItemViewType(result.posInSubAdapter);
+        if (result.getViewTypesMap().containsValue(localViewType)) {
+            for (Map.Entry<Integer, Integer> entry : result.getViewTypesMap().entrySet()) {
                 if (entry.getValue() == localViewType) {
                     return entry.getKey();
                 }
@@ -165,180 +244,39 @@ public class RecyclerViewMergeAdapter<T extends RecyclerView.Adapter> extends Re
         }
 
         mViewTypeIndex += 1;
-        result.mViewTypesMap.put(mViewTypeIndex, localViewType);
+        result.getViewTypesMap().put(mViewTypeIndex, localViewType);
+
         return mViewTypeIndex;
     }
 
-
-    @Override public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
-        for (LocalAdapter adapter: mAdapters){
-            if (adapter.mViewTypesMap.containsKey(viewType))
-                return adapter.mAdapter.onCreateViewHolder(viewGroup,adapter.mViewTypesMap.get(viewType));
-        }
-
-        return null;
-    }
-
-    @Override public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
-        LocalAdapter result = getAdapterOffsetForItem(position);
-        result.mAdapter.onBindViewHolder(viewHolder, result.mLocalPosition);
-    }
-
-	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	 * forwarding data set observer
-	 * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-    private int getMergePositionForLocalPosition(RecyclerView.Adapter adapter, int position) {
-        final int adapterPosition = findPositionForAdapter(adapter);
-
-        int index = 0;
-
-        for (LocalAdapter localAdapter : mAdapters) {
-            if (index < adapterPosition) {
-                position += localAdapter.mAdapter.getItemCount();
-            } else {
-                break;
-            }
-
-            index++;
-        }
-
+    @Override
+    public long getItemId(int position) {
         return position;
     }
 
-    private int findPositionForAdapter(RecyclerView.Adapter adapter) {
-        for (int index = 0; index < mAdapters.size(); index++) {
-            if (mAdapters.get(index).mAdapter == adapter) {
-                return index;
-            }
+    @Override
+    public int getItemCount() {
+        int count = 0;
+        for (LocalAdapter adapter : mAdapters) {
+            count += adapter.mAdapter.getItemCount();
         }
-
-        return -1;
+        return count;
     }
-
-    private class ForwardingDataSetObserver extends RecyclerView.AdapterDataObserver {
-        private RecyclerView.Adapter mAdapter;
-
-        public ForwardingDataSetObserver(RecyclerView.Adapter adapter) {
-            this.mAdapter = adapter;
-        }
-
-        @Override public void onChanged() {
-            notifyDataSetChanged();
-        }
-
-        @Override public void onItemRangeChanged(int positionStart, int itemCount) {
-            int mergePositionStart = getMergePositionForLocalPosition(mAdapter, positionStart);
-
-            super.onItemRangeChanged(mergePositionStart, itemCount);
-            notifyItemRangeChanged(mergePositionStart, itemCount);
-        }
-
-        @Override public void onItemRangeInserted(int positionStart, int itemCount) {
-            int mergePositionStart = getMergePositionForLocalPosition(mAdapter, positionStart);
-
-            super.onItemRangeInserted(mergePositionStart, itemCount);
-            notifyItemRangeInserted(mergePositionStart, itemCount);
-        }
-
-        @Override public void onItemRangeRemoved(int positionStart, int itemCount) {
-            int mergePositionStart = getMergePositionForLocalPosition(mAdapter, positionStart);
-
-            super.onItemRangeRemoved(mergePositionStart, itemCount);
-            notifyItemRangeRemoved(mergePositionStart, itemCount);
-        }
-    }
-
 
     /**
-     * ViewsAdapter, ported from CommonsWare SackOfViews adapter.
+     * Add one or more View objects to the adapter.
+     *
+     * @param view The View or View(s) to add to the adapter. Do not pass null into this method.
      */
-    public static class ViewsAdapter extends RecyclerView.Adapter {
-        private List<View> views=null;
-        private Context context;
-
-        /**
-         * Constructor creating an empty list of views, but with
-         * a specified count. Subclasses must override newView().
-         */
-        public ViewsAdapter(Context context, int count) {
-            super();
-            this.context = context;
-
-            views=new ArrayList<>(count);
-
-            for (int i=0;i<count;i++) {
-                views.add(null);
-            }
-        }
-
-        /**
-         * Constructor wrapping a supplied list of views.
-         * Subclasses must override newView() if any of the elements
-         * in the list are null.
-         */
-        public ViewsAdapter(Context context, List<View> views) {
-            super();
-            this.context = context;
-
-            this.views=views;
-        }
-
-        /**
-         * How many items are in the data set represented by this
-         * Adapter.
-         */
-        @Override
-        public int getItemCount() {
-            return(views.size());
-        }
-
-        /**
-         * Get the type of View that will be created by getView()
-         * for the specified item.
-         * @param position Position of the item whose data we want
-         */
-        @Override
-        public int getItemViewType(int position) {
-            return(position);
-        }
-
-        @Override public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
-            //view type is equal to the position in this adapter.
-            ViewsViewHolder holder = new ViewsViewHolder(views.get(viewType));
-            return holder;
-        }
-
-        @Override public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {}
-
-        /**
-         * Get the row id associated with the specified position
-         * in the list.
-         * @param position Position of the item whose data we want
-         */
-        @Override
-        public long getItemId(int position) {
-            return(position);
-        }
-
-        public boolean hasView(View v) {
-            return(views.contains(v));
-        }
-
-        /**
-         * Create a new View to go into the list at the specified
-         * position.
-         * @param position Position of the item whose data we want
-         * @param parent ViewGroup containing the returned View
-         */
-        protected View newView(int position, ViewGroup parent) {
-            throw new RuntimeException("You must override newView()!");
-        }
+    public void addView(View... view) {
+        List<View> viewList = Arrays.asList(view);
+        addViews(viewList);
     }
 
-    public static class ViewsViewHolder extends RecyclerView.ViewHolder{
-        public ViewsViewHolder(View itemView) {
-            super(itemView);
-        }
+    /**
+     * A List of View objects to the adapter at once. Make sure your list does not contain null.
+     */
+    public void addViews(List<View> views) {
+        addAdapter(new ViewAdapter(views));
     }
 }
