@@ -18,37 +18,43 @@ dependencies {
 
 ## Usage
 
-Add subadapters to the merge adapter and then set it on the RecyclerView. It's also possible to add individual views or a list of views to the merge adapter.
+Add subadapters to the merge adapter and then set it on the RecyclerView. It's also possible to add individual views or a list of views to the merge adapter, using `addView(View... view)` or `addView(List<View> viewList)`
 
 ```
 RecyclerView myRecyclerView = (RecyclerView) view.findViewById(R.id.my_recycler_view);
 
-// Create new merge adapter
+// Create a new merge adapter.
 RecyclerViewMergeAdapter mergeAdapter = new RecyclerViewMergeAdapter();
 
-// Add any number of subadapters to merge adapter
-MyRecyclerViewSubAdapter subAdapter1 = new MyRecyclerViewSubAdapter();
-MyRecyclerViewSubAdapter subAdapter2 = new MyRecyclerViewSubAdapter();
+// Add any number of subadapters to the merge adapter.
+RecyclerView.Adapter subAdapter1 = new RecyclerView.Adapter();
+RecyclerView.Adapter subAdapter2 = new RecyclerView.Adapter();
 
 mergeAdapter.addAdapter(subAdapter1);
 mergeAdapter.addAdapter(subAdapter2);
 
-// Set merge adapter to RecyclerView
+// Set the merge adapter on the RecyclerView.
 myRecyclerView.setAdapter(mergeAdapter);
+}
 ```
 
 ##### RecyclerViewMergeAdapter methods
 
-- `addAdapter(T adapter)`
-- `addAdapter(int index, T adapter)`
-- `removeAdapter(T adapter)`
+- `addAdapter(RecyclerView.Adapter adapter)`
+- `addAdapter(int index, RecyclerView.Adapter adapter)`
+- `removeAdapter(RecyclerView.Adapter adapter)`
 - `removeAdapter(int index)`
-- `addView(View view)`
+- `addView(View... view)`
 - `addViews(List<View> views)`
 - `getSubAdapterCount()`
 - `getSubAdapter(int index)`
+- `clearAdapters()`
 
 
 ## License
 
 Licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html)
+
+## Development
+
+We have a small test project called [RecyclerViewMergeAdapterTest](https://github.com/ronaldw/RecyclerViewMergeAdapterTest) where you can find an example of how to import and use the adapter. If you find any bugs or issues, please file a report with the tracker.
