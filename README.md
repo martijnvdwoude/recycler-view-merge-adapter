@@ -12,7 +12,7 @@ The purpose of this merge adapter is to let you use multiple adapters with a Rec
 Gradle (jCenter)
 ```
 dependencies {
-    compile 'me.mvdw.recyclerviewmergeadapter:recyclerviewmergeadapter:1.0.0'
+    compile 'me.mvdw.recyclerviewmergeadapter:recyclerviewmergeadapter:2.0.0'
 }
 ```
 
