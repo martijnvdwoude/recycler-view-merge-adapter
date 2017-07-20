@@ -1,5 +1,6 @@
 package me.mvdw.recyclerviewmergeadapter.adapter;
 
+import android.support.annotation.NonNull;
 import android.support.v4.util.LongSparseArray;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -60,7 +61,7 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
         public AdapterDataObserver adapterDataObserver;
         public LongSparseArray<Long> mItemIdMap = new LongSparseArray<>();
 
-        public LocalAdapter(RecyclerView.Adapter adapter, AdapterDataObserver adapterDataObserver) {
+        public LocalAdapter(@NonNull RecyclerView.Adapter adapter, @NonNull AdapterDataObserver adapterDataObserver) {
             mAdapter = adapter;
             this.adapterDataObserver = adapterDataObserver;
         }
@@ -73,7 +74,7 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
         public final LocalAdapter localAdapter;
         public final int posInSubAdapter;
 
-        public PosSubAdapterInfo(LocalAdapter adapter, int position) {
+        public PosSubAdapterInfo(@NonNull LocalAdapter adapter, int position) {
             localAdapter = adapter;
             posInSubAdapter = position;
         }
@@ -108,7 +109,7 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
     /**
      * @param adapter Append an adapter to the list of adapters.
      */
-    public void addAdapter(RecyclerView.Adapter adapter) {
+    public void addAdapter(@NonNull RecyclerView.Adapter adapter) {
         addAdapter(mAdapters.size(), adapter);
     }
 
@@ -116,7 +117,7 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
      * @param index   The index at which to add an adapter to the list of adapters.
      * @param adapter The adapter to add.
      */
-    public void addAdapter(int index, RecyclerView.Adapter adapter) {
+    public void addAdapter(int index, @NonNull RecyclerView.Adapter adapter) {
         AdapterDataObserver adapterDataObserver = new AdapterDataObserver(adapter);
         mAdapters.add(index, new LocalAdapter(adapter, adapterDataObserver));
         adapter.registerAdapterDataObserver(adapterDataObserver);
@@ -303,7 +304,7 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
      *
      * @param view The View or View(s) to add to the adapter. Do not pass null into this method.
      */
-    public void addView(View... view) {
+    public void addView(@NonNull View... view) {
         List<View> viewList = Arrays.asList(view);
         addViews(viewList);
     }
@@ -311,7 +312,7 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
     /**
      * A List of View objects to the adapter at once. Make sure your list does not contain null.
      */
-    public void addViews(List<View> views) {
+    public void addViews(@NonNull List<View> views) {
         addAdapter(new ViewAdapter(views));
     }
 }
