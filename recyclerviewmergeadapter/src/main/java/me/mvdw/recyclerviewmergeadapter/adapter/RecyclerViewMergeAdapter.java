@@ -48,7 +48,7 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
     /**
      * LocalAdapter is a wrapper class that, for a given adapter, maintains a map of which indices in the global set of items refer to which view type(s).
      */
-    public class LocalAdapter {
+    public static class LocalAdapter {
         public final RecyclerView.Adapter mAdapter;
         public Map<Integer, Integer> mViewTypesMap = new HashMap<>();
         public AdapterDataObserver adapterDataObserver;
@@ -62,7 +62,7 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
     /**
      * PosSubAdapterInfo is a wrapper class that holds a local position of an item and reference to the adapter it belongs to.
      */
-    public class PosSubAdapterInfo {
+    public static class PosSubAdapterInfo {
         public final LocalAdapter localAdapter;
         public final int posInSubAdapter;
 
