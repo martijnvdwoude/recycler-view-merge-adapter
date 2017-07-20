@@ -1,5 +1,6 @@
 package me.mvdw.recyclerviewmergeadapter.adapter;
 
+import android.support.v4.util.LongSparseArray;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +19,11 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
 
         AdapterDataObserver(RecyclerView.Adapter adapter) {
             mAdapter = adapter;
+        }
+
+        @Override
+        public void onChanged() {
+            RecyclerViewMergeAdapter.this.notifyDataSetChanged();
         }
 
         @Override
@@ -52,6 +58,7 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
         public final RecyclerView.Adapter mAdapter;
         public Map<Integer, Integer> mViewTypesMap = new HashMap<>();
         public AdapterDataObserver adapterDataObserver;
+        public LongSparseArray<Long> mItemIdMap = new LongSparseArray<>();
 
         public LocalAdapter(RecyclerView.Adapter adapter, AdapterDataObserver adapterDataObserver) {
             mAdapter = adapter;
@@ -82,10 +89,13 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
 
     protected List<LocalAdapter> mAdapters;
     private int mViewTypeIndex;
+    private long mNextItemId;
+
 
     public RecyclerViewMergeAdapter() {
         mAdapters = new ArrayList<>();
         mViewTypeIndex = 0;
+        mNextItemId = 0;
     }
 
     /**
@@ -251,7 +261,19 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
 
     @Override
     public long getItemId(int position) {
-        return position;
+        PosSubAdapterInfo posSubAdapterInfo = getPosSubAdapterInfoForGlobalPosition(position);
+        long localItemId = posSubAdapterInfo.getAdapter().getItemId(posSubAdapterInfo.posInSubAdapter);
+        if (RecyclerView.NO_ID == localItemId) {
+            return localItemId;
+        } else {
+            long globalItemId = posSubAdapterInfo.localAdapter.mItemIdMap.get(localItemId, RecyclerView.NO_ID);
+            if (RecyclerView.NO_ID == globalItemId) {
+                mNextItemId++;
+                globalItemId = mNextItemId;
+                posSubAdapterInfo.localAdapter.mItemIdMap.put(localItemId, globalItemId);
+            }
+            return globalItemId;
+        }
     }
 
     @Override

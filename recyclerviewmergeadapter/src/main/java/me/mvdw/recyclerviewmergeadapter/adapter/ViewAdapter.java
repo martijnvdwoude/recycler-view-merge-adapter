@@ -36,4 +36,9 @@ public class ViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {}
+
+    @Override
+    public long getItemId(int position) {
+        return position;
+    }
 }
