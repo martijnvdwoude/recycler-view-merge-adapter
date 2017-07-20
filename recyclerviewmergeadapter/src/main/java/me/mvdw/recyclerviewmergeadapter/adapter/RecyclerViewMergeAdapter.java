@@ -133,6 +133,19 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
     }
 
     /**
+     * Check if a specified adapter has been added.
+     *
+     * @param adapter The adapter to check in the list of adapters.
+     */
+    public boolean containsAdapter(RecyclerView.Adapter adapter) {
+        for (LocalAdapter localAdapter : mAdapters) {
+            if (localAdapter.mAdapter.equals(adapter)) return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Remove a specific adapter from the list of adapters.
      *
      * @param adapter The adapter to remove from the list of adapters.
