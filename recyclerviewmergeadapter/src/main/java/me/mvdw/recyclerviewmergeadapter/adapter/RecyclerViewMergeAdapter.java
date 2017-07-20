@@ -14,9 +14,9 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
 
     private class AdapterDataObserver extends RecyclerView.AdapterDataObserver {
 
-        private RecyclerView.Adapter<RecyclerView.ViewHolder> mAdapter;
+        private RecyclerView.Adapter mAdapter;
 
-        AdapterDataObserver(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter) {
+        AdapterDataObserver(RecyclerView.Adapter adapter) {
             mAdapter = adapter;
         }
 
@@ -49,11 +49,11 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
      * LocalAdapter is a wrapper class that, for a given adapter, maintains a map of which indices in the global set of items refer to which view type(s).
      */
     public class LocalAdapter {
-        public final RecyclerView.Adapter<RecyclerView.ViewHolder> mAdapter;
+        public final RecyclerView.Adapter mAdapter;
         public Map<Integer, Integer> mViewTypesMap = new HashMap<>();
         public AdapterDataObserver adapterDataObserver;
 
-        public LocalAdapter(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, AdapterDataObserver adapterDataObserver) {
+        public LocalAdapter(RecyclerView.Adapter adapter, AdapterDataObserver adapterDataObserver) {
             mAdapter = adapter;
             this.adapterDataObserver = adapterDataObserver;
         }
@@ -71,7 +71,7 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
             posInSubAdapter = position;
         }
 
-        public RecyclerView.Adapter<RecyclerView.ViewHolder> getAdapter() {
+        public RecyclerView.Adapter getAdapter() {
             return localAdapter != null ? localAdapter.mAdapter : null;
         }
 
@@ -98,7 +98,7 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
     /**
      * @param adapter Append an adapter to the list of adapters.
      */
-    public void addAdapter(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter) {
+    public void addAdapter(RecyclerView.Adapter adapter) {
         addAdapter(mAdapters.size(), adapter);
     }
 
@@ -106,7 +106,7 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
      * @param index   The index at which to add an adapter to the list of adapters.
      * @param adapter The adapter to add.
      */
-    public void addAdapter(int index, RecyclerView.Adapter<RecyclerView.ViewHolder> adapter) {
+    public void addAdapter(int index, RecyclerView.Adapter adapter) {
         AdapterDataObserver adapterDataObserver = new AdapterDataObserver(adapter);
         mAdapters.add(index, new LocalAdapter(adapter, adapterDataObserver));
         adapter.registerAdapterDataObserver(adapterDataObserver);
@@ -227,7 +227,7 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
         PosSubAdapterInfo posSubAdapterInfo = getPosSubAdapterInfoForGlobalPosition(position);
-        RecyclerView.Adapter<RecyclerView.ViewHolder> adapter = posSubAdapterInfo.getAdapter();
+        RecyclerView.Adapter adapter = posSubAdapterInfo.getAdapter();
         adapter.onBindViewHolder(viewHolder, posSubAdapterInfo.posInSubAdapter);
     }
 
