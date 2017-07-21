@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * ViewsAdapter, ported from CommonsWare SackOfViews adapter -> https://github.com/commonsguy/cwac-sacklist.
+ * ViewsAdapter, ported from CommonsWare SackOfViews adapter https://github.com/commonsguy/cwac-sacklist.
  */
 public class ViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
