@@ -49,6 +49,8 @@ myRecyclerView.setAdapter(mergeAdapter);
 - `getSubAdapterCount()`
 - `getSubAdapter(int index)`
 - `clearAdapters()`
+- `containsAdapter(RecyclerView.Adapter adapter)`
+
 
 
 ## License
