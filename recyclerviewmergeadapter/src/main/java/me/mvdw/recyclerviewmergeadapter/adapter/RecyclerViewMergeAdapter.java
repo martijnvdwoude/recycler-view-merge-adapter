@@ -1,6 +1,7 @@
 package me.mvdw.recyclerviewmergeadapter.adapter;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.util.LongSparseArray;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -80,11 +81,11 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
         }
 
         public RecyclerView.Adapter getAdapter() {
-            return localAdapter != null ? localAdapter.mAdapter : null;
+            return localAdapter.mAdapter;
         }
 
         Map<Integer, Integer> getViewTypesMap() {
-            return localAdapter != null ? localAdapter.mViewTypesMap : null;
+            return localAdapter.mViewTypesMap;
         }
     }
 
@@ -197,6 +198,7 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
      * @return A PosSubAdapterInfo object containing a reference to the adapter and the local
      * position in that adapter that corresponds to the given global position.
      */
+    @Nullable
     public PosSubAdapterInfo getPosSubAdapterInfoForGlobalPosition(final int globalPosition) {
 
         final int adapterCount = mAdapters.size();
@@ -218,6 +220,7 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
     }
 
     @Override
+    @Nullable
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         for (LocalAdapter adapter : mAdapters) {
             if (adapter.mViewTypesMap.containsKey(viewType)) {
