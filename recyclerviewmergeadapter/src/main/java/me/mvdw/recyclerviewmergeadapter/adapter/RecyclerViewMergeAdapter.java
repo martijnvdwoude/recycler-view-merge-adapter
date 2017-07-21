@@ -4,14 +4,13 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.util.LongSparseArray;
 import android.support.v7.widget.RecyclerView;
+import android.util.SparseIntArray;
 import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
 
@@ -58,7 +57,7 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
      */
     public static class LocalAdapter {
         public final RecyclerView.Adapter mAdapter;
-        public Map<Integer, Integer> mViewTypesMap = new HashMap<>();
+        public SparseIntArray mViewTypesMap = new SparseIntArray();
         public AdapterDataObserver adapterDataObserver;
         public LongSparseArray<Long> mItemIdMap = new LongSparseArray<>();
 
@@ -84,7 +83,7 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
             return localAdapter.mAdapter;
         }
 
-        Map<Integer, Integer> getViewTypesMap() {
+        SparseIntArray getViewTypesMap() {
             return localAdapter.mViewTypesMap;
         }
     }
@@ -223,8 +222,9 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
     @Nullable
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         for (LocalAdapter adapter : mAdapters) {
-            if (adapter.mViewTypesMap.containsKey(viewType)) {
-                return adapter.mAdapter.onCreateViewHolder(viewGroup, adapter.mViewTypesMap.get(viewType));
+            int localViewType = adapter.mViewTypesMap.get(viewType, -1);
+            if (localViewType >= 0) {
+                return adapter.mAdapter.onCreateViewHolder(viewGroup, localViewType);
             }
         }
         return null;
@@ -262,16 +262,13 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
     public int getItemViewType(int position) {
         PosSubAdapterInfo result = getPosSubAdapterInfoForGlobalPosition(position);
         int localViewType = result.getAdapter().getItemViewType(result.posInSubAdapter);
-        if (result.getViewTypesMap().containsValue(localViewType)) {
-            for (Map.Entry<Integer, Integer> entry : result.getViewTypesMap().entrySet()) {
-                if (entry.getValue() == localViewType) {
-                    return entry.getKey();
-                }
-            }
+        int localViewTypeIndex = result.getViewTypesMap().indexOfValue(localViewType);
+        if (localViewTypeIndex >= 0) {
+            return result.getViewTypesMap().keyAt(localViewTypeIndex);
         }
 
         mViewTypeIndex += 1;
-        result.getViewTypesMap().put(mViewTypeIndex, localViewType);
+        result.getViewTypesMap().append(mViewTypeIndex, localViewType);
 
         return mViewTypeIndex;
     }
