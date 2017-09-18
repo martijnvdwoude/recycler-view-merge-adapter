@@ -142,6 +142,7 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
      * Check if a specified adapter has been added.
      *
      * @param adapter The adapter to check in the list of adapters.
+     * @return Whether the list of adapters contains the adapter.
      */
     public boolean containsAdapter(RecyclerView.Adapter adapter) {
         for (LocalAdapter localAdapter : mAdapters) {
@@ -326,7 +327,9 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
     }
 
     /**
-     * A List of View objects to the adapter at once. Make sure your list does not contain null.
+     * A List of View objects to the adapter at once.
+     *
+     * @param views The Views to add to the adapter. Do not pass null into this method.
      */
     public void addViews(@NonNull List<View> views) {
         addAdapter(new ViewAdapter(views));
