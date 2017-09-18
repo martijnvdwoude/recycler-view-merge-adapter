@@ -51,9 +51,11 @@ public class ViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     public void setViews(List<View> views) {
         viewList.clear();
+
         if (views != null) {
             viewList.addAll(views);
         }
+
         notifyDataSetChanged();
     }
 
@@ -61,6 +63,7 @@ public class ViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         if (viewList != null) {
             viewList.clear();
         }
+
         notifyDataSetChanged();
     }
 
@@ -75,6 +78,7 @@ public class ViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             notifyItemRemoved(position);
             return view;
         }
+
         return null;
     }
 
@@ -84,10 +88,10 @@ public class ViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     public void addViews(List<View> items) {
         if (null == items || items.isEmpty()) return;
+
         viewList.addAll(items);
         notifyItemRangeInserted(getItemCount() - items.size(), items.size());
     }
-
 
     public void moveView(int fromPosition, int toPosition) {
         final View view = viewList.remove(fromPosition);
@@ -98,4 +102,5 @@ public class ViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public List<View> getViews() {
         return viewList;
     }
+
 }

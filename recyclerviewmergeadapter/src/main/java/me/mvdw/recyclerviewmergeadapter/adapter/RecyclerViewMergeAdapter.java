@@ -50,12 +50,14 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
             int subAdapterOffset = getSubAdapterFirstGlobalPosition(mAdapter);
             RecyclerViewMergeAdapter.this.notifyItemRangeRemoved(subAdapterOffset + positionStart, itemCount);
         }
+
     }
 
     /**
      * LocalAdapter is a wrapper class that, for a given adapter, maintains a map of which indices in the global set of items refer to which view type(s).
      */
     public static class LocalAdapter {
+
         public final RecyclerView.Adapter mAdapter;
         public SparseIntArray mViewTypesMap = new SparseIntArray();
         public AdapterDataObserver adapterDataObserver;
@@ -65,12 +67,14 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
             mAdapter = adapter;
             this.adapterDataObserver = adapterDataObserver;
         }
+
     }
 
     /**
      * PosSubAdapterInfo is a wrapper class that holds a local position of an item and reference to the adapter it belongs to.
      */
     public static class PosSubAdapterInfo {
+
         public final LocalAdapter localAdapter;
         public final int posInSubAdapter;
 
@@ -86,12 +90,12 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
         SparseIntArray getViewTypesMap() {
             return localAdapter.mViewTypesMap;
         }
+
     }
 
     protected List<LocalAdapter> mAdapters;
     private int mViewTypeIndex;
     private long mNextItemId;
-
 
     public RecyclerViewMergeAdapter() {
         mAdapters = new ArrayList<>();
@@ -130,6 +134,7 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
         for (LocalAdapter localAdapter : mAdapters) {
             localAdapter.mAdapter.unregisterAdapterDataObserver(localAdapter.adapterDataObserver);
         }
+
         mAdapters.clear();
     }
 
@@ -154,6 +159,7 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
     public void removeAdapter(RecyclerView.Adapter adapter) {
         for (int i = mAdapters.size() - 1; i >= 0; i--) {
             LocalAdapter local = mAdapters.get(i);
+
             if (local.mAdapter.equals(adapter)) {
                 removeAdapter(mAdapters.indexOf(local));
             }
@@ -199,7 +205,6 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
      */
     @Nullable
     public PosSubAdapterInfo getPosSubAdapterInfoForGlobalPosition(final int globalPosition) {
-
         final int adapterCount = mAdapters.size();
 
         int i = 0;
@@ -208,9 +213,11 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
         while (i < adapterCount) {
             LocalAdapter a = mAdapters.get(i);
             int newCount = count + a.mAdapter.getItemCount();
+
             if (globalPosition < newCount) {
                 return new PosSubAdapterInfo(a, globalPosition - count);
             }
+
             count = newCount;
             i++;
         }
@@ -223,10 +230,12 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         for (LocalAdapter adapter : mAdapters) {
             int localViewType = adapter.mViewTypesMap.get(viewType, -1);
+
             if (localViewType >= 0) {
                 return adapter.mAdapter.onCreateViewHolder(viewGroup, localViewType);
             }
         }
+
         return null;
     }
 
@@ -237,14 +246,15 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
      * @return The first global position for the given adapter, or -1 if no such position could be found.
      */
     public int getSubAdapterFirstGlobalPosition(RecyclerView.Adapter adapter) {
-
         int count = 0;
 
         for (LocalAdapter localAdapter : mAdapters) {
             RecyclerView.Adapter adapter_ = localAdapter.mAdapter;
+
             if (adapter_.equals(adapter) && adapter_.getItemCount() > 0) {
                 return count;
             }
+
             count += adapter_.getItemCount();
         }
 
@@ -263,6 +273,7 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
         PosSubAdapterInfo result = getPosSubAdapterInfoForGlobalPosition(position);
         int localViewType = result.getAdapter().getItemViewType(result.posInSubAdapter);
         int localViewTypeIndex = result.getViewTypesMap().indexOfValue(localViewType);
+
         if (localViewTypeIndex >= 0) {
             return result.getViewTypesMap().keyAt(localViewTypeIndex);
         }
@@ -277,15 +288,18 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
     public long getItemId(int position) {
         PosSubAdapterInfo posSubAdapterInfo = getPosSubAdapterInfoForGlobalPosition(position);
         long localItemId = posSubAdapterInfo.getAdapter().getItemId(posSubAdapterInfo.posInSubAdapter);
+
         if (RecyclerView.NO_ID == localItemId) {
             return localItemId;
         } else {
             long globalItemId = posSubAdapterInfo.localAdapter.mItemIdMap.get(localItemId, RecyclerView.NO_ID);
+
             if (RecyclerView.NO_ID == globalItemId) {
                 mNextItemId++;
                 globalItemId = mNextItemId;
                 posSubAdapterInfo.localAdapter.mItemIdMap.put(localItemId, globalItemId);
             }
+
             return globalItemId;
         }
     }
@@ -293,9 +307,11 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
     @Override
     public int getItemCount() {
         int count = 0;
+
         for (LocalAdapter adapter : mAdapters) {
             count += adapter.mAdapter.getItemCount();
         }
+
         return count;
     }
 
@@ -315,4 +331,5 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
     public void addViews(@NonNull List<View> views) {
         addAdapter(new ViewAdapter(views));
     }
+
 }
