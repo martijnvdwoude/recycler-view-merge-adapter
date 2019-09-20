@@ -252,7 +252,7 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
         for (LocalAdapter localAdapter : mAdapters) {
             RecyclerView.Adapter adapter_ = localAdapter.mAdapter;
 
-            if (adapter_.equals(adapter) && adapter_.getItemCount() > 0) {
+            if (adapter_.equals(adapter)) {
                 return count;
             }
 
