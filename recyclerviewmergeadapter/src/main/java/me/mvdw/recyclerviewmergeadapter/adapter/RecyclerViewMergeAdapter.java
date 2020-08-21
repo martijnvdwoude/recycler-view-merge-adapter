@@ -29,25 +29,25 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
 
         @Override
         public void onItemRangeChanged(int positionStart, int itemCount) {
-            int subAdapterOffset = getSubAdapterFirstGlobalPosition(mAdapter);
+            int subAdapterOffset = getSubAdapterFirstGlobalPositionEvenIfEmpty(mAdapter);
             RecyclerViewMergeAdapter.this.notifyItemRangeChanged(subAdapterOffset + positionStart, itemCount);
         }
 
         @Override
         public void onItemRangeInserted(int positionStart, int itemCount) {
-            int subAdapterOffset = getSubAdapterFirstGlobalPosition(mAdapter);
+            int subAdapterOffset = getSubAdapterFirstGlobalPositionEvenIfEmpty(mAdapter);
             RecyclerViewMergeAdapter.this.notifyItemRangeInserted(subAdapterOffset + positionStart, itemCount);
         }
 
         @Override
         public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
-            int subAdapterOffset = getSubAdapterFirstGlobalPosition(mAdapter);
+            int subAdapterOffset = getSubAdapterFirstGlobalPositionEvenIfEmpty(mAdapter);
             RecyclerViewMergeAdapter.this.notifyItemMoved(subAdapterOffset + fromPosition, subAdapterOffset + toPosition);
         }
 
         @Override
         public void onItemRangeRemoved(int positionStart, int itemCount) {
-            int subAdapterOffset = getSubAdapterFirstGlobalPosition(mAdapter);
+            int subAdapterOffset = getSubAdapterFirstGlobalPositionEvenIfEmpty(mAdapter);
             RecyclerViewMergeAdapter.this.notifyItemRangeRemoved(subAdapterOffset + positionStart, itemCount);
         }
 
@@ -240,19 +240,20 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
         return null;
     }
 
+
     /**
      * Return the first global position in the entire set of items for a given adapter.
      *
      * @param adapter The adapter for which to the return the first global position.
      * @return The first global position for the given adapter, or -1 if no such position could be found.
      */
-    public int getSubAdapterFirstGlobalPosition(RecyclerView.Adapter adapter) {
+    private int getSubAdapterFirstGlobalPositionInternal(RecyclerView.Adapter adapter, Boolean evenIfEmpty) {
         int count = 0;
 
         for (LocalAdapter localAdapter : mAdapters) {
             RecyclerView.Adapter adapter_ = localAdapter.mAdapter;
 
-            if (adapter_.equals(adapter) && adapter_.getItemCount() > 0) {
+            if (adapter_.equals(adapter) && (evenIfEmpty || adapter_.getItemCount() > 0)) {
                 return count;
             }
 
@@ -261,6 +262,16 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
 
         return -1;
     }
+
+    public int getSubAdapterFirstGlobalPositionEvenIfEmpty(RecyclerView.Adapter adapter) {
+        return getSubAdapterFirstGlobalPositionInternal(adapter, true);
+    }
+
+    public int getSubAdapterFirstGlobalPosition(RecyclerView.Adapter adapter) {
+        return getSubAdapterFirstGlobalPositionInternal(adapter, false);
+    }
+
+
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
