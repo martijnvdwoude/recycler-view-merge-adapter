@@ -247,7 +247,7 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
      * @param adapter The adapter for which to the return the first global position.
      * @return The first global position for the given adapter, or -1 if no such position could be found.
      */
-    private int getSubAdapterFirstGlobalPositionInternal(RecyclerView.Adapter adapter, Boolean evenIfEmpty) {
+    private int getSubAdapterFirstGlobalPositionInternal(RecyclerView.Adapter adapter, boolean evenIfEmpty) {
         int count = 0;
 
         for (LocalAdapter localAdapter : mAdapters) {
@@ -270,7 +270,6 @@ public class RecyclerViewMergeAdapter extends RecyclerView.Adapter {
     public int getSubAdapterFirstGlobalPosition(RecyclerView.Adapter adapter) {
         return getSubAdapterFirstGlobalPositionInternal(adapter, false);
     }
-
 
 
     @Override
